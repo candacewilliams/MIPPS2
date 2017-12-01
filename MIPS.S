@@ -24,6 +24,7 @@ find_substring:
       addi $t2, $t2, 1 #points to next character in string
       beq $t1, 44, Subprogram1 #if comma is found check substring
       addi $t3, $t3, 1 #increments counter
+	  bgt $t3, 8, too_large
       j find_substring #jumps to continue loop
 
 Subprogram1:
@@ -63,11 +64,18 @@ Invalid:
 
       li $v0,10 #ends program
       syscall
-	 
+too_large:
+      la $a0, hex_too_large #loads string
+      li $v0, 4 #prints new line for string
+      syscall
+
+      li $v0,10 #ends program
+      syscall
+
 check_string:
       lb $t1, 0($t2) #loads first index of string
       beq $t1, 0, Exit_2 #checks for null, then exits
-      #beq $t1, 10, Exit_2 #looks for new line character, then exits
+      beq $t1, 10, Exit_2 #looks for new line character, then exits
 	  beq $t1, 44, Exit_2 #looks for character, then exits
       addi $t2, $t2, 1 #points to next character in string
       beq $t1, 32, check_string #doesn't increment if character is a space
