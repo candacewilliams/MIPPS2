@@ -3,7 +3,6 @@ char_array: .space 1001 #allocates space for 1000 characters and 1 NULL
 new_line: .asciiz "\n" #used to separate 1000 characters from extra ones
 invalid_hex: .asciiz "NaN" #for substrings with invalid characters
 hex_too_large: .asciiz "too large" #for substrings with 8+ characters
-found_comma: .asciiz "found comma" #temporary to see if comma was found
 .text
   main:
       li $v0, 8 #receives input
@@ -23,14 +22,106 @@ found_comma: .asciiz "found comma" #temporary to see if comma was found
 find_substring:
       lb $t1,0($t2) #loads first index of string
       addi $t2, $t2, 1 #points to next character in string
-      beq $t1, 44, isValid_Hex #if comma is found check substring
+      beq $t1, 44, Subprogram1 #if comma is found check substring
       addi $t3, $t3, 1 #increments counter
       j find_substring #jumps to continue loop
 
+Subprogram1:
+	  add $a0, $t3, $0 #load sum to print
+	  la $t2, char_array #stores string address into Exit:
+      addi $a0, $t3, 0 #stores $t3 in $a0
+      addi $t1, $0, 0 #initializes $t1 to zero (stores character)
+      la $t2, char_array #stores string address into register
+      #$t3 stores the counter
+      add $t4, $0, $0 #stores the sum for the hex number
+      addi $s0, $0, 4 #the 4 in (count -1) * 4
+      sub $t3, $t3, 1 #decrements counter by 1
+      mult $t3, $s0 #shift amount (count - 1 ) * 4
+      mflo $t5 #moves result of (count - 1) * 4 into $t5
+
 isValid_Hex:
-      la $a0, found_comma #loads found comma test case
-      li $v0, 4 #prints comma was found
+	  beq $t6, $t3, Exit_2
+	  addi $t6, $t6, 1
+      lb $t1, 0($t2) #loads first index of string
+      beq $t1, 0, Exit_2 #checks for null, then exits
+      beq $t1, 10, Exit_2 #looks for new line character, then exits
+	  beq $t1, 44, Exit_2 #looks for comma then exits
+      addi $t2, $t2, 1 #points to next character in string
+      beq $t1, 32, check_string #doesn't increment if character is a space
+      blt $t1, 48, Invalid #checks if character is before 0 in ASCII chart
+      blt $t1, 58, Translate_Number #checks if character is between 48 and 57
+      blt $t1, 65, Invalid #checks if character is between 58 and 64
+      blt $t1, 71, Translate_UpperCase #checks if character is between 65 and 70
+      blt $t1, 97, Invalid #checks if character is between 71 and 96
+      blt $t1, 103, Translate_LowerCase #checks if character is between 97 and 102
+      blt $t1, 128, Invalid #checks if character is between 103 and 127
+      
+Invalid:
+      la $a0, invalid_hex #loads string
+      li $v0, 4 #prints new line for string
       syscall
 
       li $v0,10 #ends program
       syscall
+	 
+check_string:
+      lb $t1, 0($t2) #loads first index of string
+      beq $t1, 0, Exit_2 #checks for null, then exits
+      #beq $t1, 10, Exit_2 #looks for new line character, then exits
+	  beq $t1, 44, Exit_2 #looks for character, then exits
+      addi $t2, $t2, 1 #points to next character in string
+      beq $t1, 32, check_string #doesn't increment if character is a space
+      blt $t1, 48, Invalid #checks if character is before 0 in ASCII chart
+      blt $t1, 58, Translate_Number #checks if character is between 48 and 57
+      blt $t1, 65, Invalid #checks if character is between 58 and 64
+      blt $t1, 71, Translate_UpperCase #checks if character is between 65 and 70
+      blt $t1, 97, Invalid #checks if character is between 71 and 96
+      blt $t1, 103, Translate_LowerCase #checks if character is between 97 and 102
+      blt $t1, 128, Invalid #checks if character is between 103 and 127
+
+Translate_Number:
+      sub $t1, $t1, 48 #subtracts 48 from the ASCII value
+      sllv $t1, $t1, $t5 #shifts hex value to represent position in string
+      add $t4, $t4, $t1 #adds hex value to the sum
+      sub $t5, $t5, 4 #decrements the shift amount
+      j check_string #returns to check_string loop
+
+Translate_LowerCase:
+      sub $t1, $t1, 87 #subtracts 48 from the ASCII value
+      sllv $t1, $t1, $t5 #shifts hex value to represent position in string
+      add $t4, $t4, $t1 #adds hex value to the sum
+      sub $t5, $t5, 4 #decrements the shift amount
+      j check_string #returns to check_string loop
+
+Translate_UpperCase:
+      sub $t1, $t1, 55 #subtracts 48 from the ASCII value
+      sllv $t1, $t1, $t5 #shifts hex value to represent position in string
+      add $t4, $t4, $t1 #adds hex value to the sum
+      sub $t5, $t5, 4 #decrements the shift amount
+      j check_string #returns to check_string loop
+
+Exit_2:
+      bgt $t3, 6, Print_2sComplement
+      add $a0, $t4, $0 #load sum to print
+      li $v0, 1 #print integer
+      syscall
+
+      li $v0,10 #ends program
+      syscall
+
+Print_2sComplement:
+    addi $s0, $0, 10000 # stores 10000 in $s0
+    divu $t4, $s0 #divides sum by multiple of 10 (10000)
+    mflo $s1 #stores quotient
+    mfhi $s2 #stores remainder
+
+    add $a0, $s1, $0 #stores quotient to be printed
+    li $v0, 1 #print integer
+    syscall
+
+    add $a0, $s2, $0 #load sum to print
+    li $v0, 1 #print integer
+    syscall
+
+    li $v0,10 #ends program
+    syscall
