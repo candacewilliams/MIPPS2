@@ -60,7 +60,7 @@ comma: .asciiz ","
 			la $t2, char_array #load address of string 
 			li $t3, 0 #register for reading chars
 
-			beq $t0, $t1, Exit_SubProgram_2_with_Empty_String
+			#beq $t0, $t1, Exit_SubProgram_2_with_Empty_String
 			
 			add $t2, $t2, $t0 #updates starting index
 			add $t4, $0, $0 #stores the sum for the hex 
