@@ -137,9 +137,9 @@ comma: .asciiz ","
 			lw $ra, 20($sp)
 			la $v1, invalid_hex
 			la $a0, invalid_hex
-			li $v0, 4 
+			li $v0, 4 #prints NaN for empty string
 			syscall
-			la $a0, comma
+			la $a0, comma #prints comma after
 			li $v0, 4
 			syscall
 			sw $v1, 48($sp)	# puts NaN as return value of Subprogram 2
@@ -147,7 +147,7 @@ comma: .asciiz ","
 			
 		Hex_Too_Large:
 			la $a0, hex_too_large #loads string
-			li $v0, 4 #prints new line for string
+			li $v0, 4 #prints too large for string
 			syscall
 			la $a0, comma
 			li $v0, 4
@@ -157,12 +157,12 @@ comma: .asciiz ","
 
 		Invalid:
 			la $a0, invalid_hex #loads string
-			li $v0, 4 #prints new line for string
+			li $v0, 4 #prints NaN for string
 			syscall	
 			la $a0, comma
 			li $v0, 4
 			syscall
-			la $v1, invalid_hex #loads "NaN" mem address into $v1
+			la $v1, invalid_hex #loads "NaN" memory address into $v1
 			j Exit_SubProgram_1
 
 		Translate_Number:
@@ -224,20 +224,21 @@ comma: .asciiz ","
 			li $v0, 4
 			syscall
 			j Exit_SubProgram_3
+
 		SubProgram_3_2s_Complement:
-			li $s1, 10000
-			divu $t0, $s1
+			li $s1, 10000 #stores 10000 in $s0
+			divu $t0, $s1 #divides sum by multiple of 10 (10000)
 
-			mflo $a0
-			li $v0, 1
+			mflo $a0 #stores quotient
+			li $v0, 1 #prints quotient
 			syscall
 
-			mfhi $a0
-			li $v0, 1
+			mfhi $a0 #stores remainder
+			li $v0, 1 #prints remainder
 			syscall
 
-			la $a0, comma
-			li $v0, 4
+			la $a0, comma #loads comma to be printed
+			li $v0, 4 #prints comma value
 			syscall
 
 			j Exit_SubProgram_3
