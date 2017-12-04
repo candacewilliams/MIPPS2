@@ -68,6 +68,7 @@ comma: .asciiz ","
 			bgt $t5, 8, Hex_Too_Large #if substring is more than 8 characters
 			sw $t5, 56($sp)	#stores length of substring onto stack
 			la $s0, invalid_hex	#for checking invalid subprogram1 return
+			
 			Find_Hex_Sum: 
 				beq $t0, $t1, Exit_SubProgram_2_with_Sum
 				lb $t3, 0($t2) #loads chars of substring
@@ -102,7 +103,7 @@ comma: .asciiz ","
 			lw $t1, 32($sp) #loads character to be translated
 			lw $t2, 40($sp) #loads shift amount/length
 
-			#beq $t1, 32, check_string #doesn't increment if character is a space
+			#beq $t1, 32, Exit_SubProgram_1 #doesn't increment if character is a space
 			blt $t1, 48, Invalid #checks if character is before 0 in ASCII chart
 			blt $t1, 58, Translate_Number #checks if character is between 48 and 57
 			blt $t1, 65, Invalid #checks if character is between 58 and 64
